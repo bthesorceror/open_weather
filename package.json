@@ -1,0 +1,26 @@
+{
+  "name": "open_weather",
+  "version": "1.0.0",
+  "description": "Interface for open weather api",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "forecast",
+    "weather"
+  ],
+  "author": "Brandon Farmer <bthesorceror@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "concat-stream": "^1.5.0",
+    "hyperquest": "^1.2.0",
+    "merge": "^1.2.0",
+    "once": "^1.3.2",
+    "stream-array": "^1.1.1",
+    "through2": "^2.0.0"
+  },
+  "devDependencies": {
+    "tap": "^1.4.1"
+  }
+}

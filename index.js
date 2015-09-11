@@ -24,38 +24,56 @@ var defaultOptions = {
   units: 'imperial'
 };
 
-function getForecast(city, state, options, cb) {
-  if (!cb) {
-    cb = options;
+function buildOptions(options) {
+  if (!options) {
     options = defaultOptions;
   } else {
-    options = merge(defaultOptions, options || {});
+    options = merge(defaultOptions, options);
   }
 
-  cb = once(cb);
+  return options;
+}
 
+function url(city, state, options) {
   var location = [city, state].join(",");
   var baseUrl = "http://api.openweathermap.org/data/2.5/forecast" +
                 "/daily?q=%s&mode=json&units=%s&cnt=%s";
 
-  var url = format(
-    baseUrl, location, options.units, options.numberOfDays);
+  options = buildOptions(options);
 
-  var req = request(url);
+  return format(
+    baseUrl,
+    location,
+    options.units,
+    options.numberOfDays);
+}
+
+function createOutputStream(cb) {
+  var outputStream = concat(function(output) {
+    try {
+      var data = JSON.parse(output);
+      var stream = streamify(data.list || [])
+      .pipe(dateTranslation());
+
+      cb(null, stream);
+    } catch (e) {
+      cb(new Error('Could not parse json data'));
+    }
+  });
+
+  return outputStream;
+}
+
+function getForecast(city, state, options, cb) {
+  if (!cb) { cb = options; options = null; }
+
+  cb = once(cb);
+
+  var req = request(url(city, state, options));
   req.on('error', cb);
 
   req.on('response', function(response) {
-    var outputStream = concat(function(output) {
-      try {
-        var data = JSON.parse(output);
-        var stream = streamify(data.list || [])
-           .pipe(dateTranslation());
-
-        cb(null, stream);
-      } catch (e) {
-        cb(new Error('Could not parse json data'));
-      }
-    });
+    var outputStream = createOutputStream(cb);
 
     response.on('error', cb);
     response.pipe(outputStream)
